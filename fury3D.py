@@ -78,10 +78,11 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     #     idx_hiddencells = np.argwhere( (C_xyz[:,0] > 0) & (C_xyz[:,1] > 0) ).flatten()
     #     C_colors[idx_hiddencells,3] = 0 # opacity = 0
 
-    ################################################### Scene ##########################################################
+    ###############################################################################################
     # Creaating Scene
     size_window = (1000,1000)
     showm = window.ShowManager(size=size_window, reset_camera=True, order_transparent=True)
+    ###############################################################################################
     # TITLE
     title_text = header_function(mcds)
     title = ui.TextBlock2D(text=title_text, font_size=20, font_family='Arial', justification='center', vertical_justification='bottom', bold=False, italic=False, shadow=False, color=(1, 1, 1), bg_color=None, position=(500, 900))
@@ -91,17 +92,102 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     colors = np.array([0.5, 0.5, 0.5]) # Gray
     domain_box = actor.line(lines, colors)
     showm.scene.add(domain_box)
+    ###############################################################################################
+    # Planes sections
+    center = np.array([[0,0,0]])
+    box_actorXY = actor.box(center, np.array([[1,1,0]]), colors=(0.5, 0.5, 0.5,0.4),scales=(2*y_max_domain,2*x_max_domain,0.5*dz))
+    box_actorXZ = actor.box(center, np.array([[1,0,1]]), colors=(0.5, 0.5, 0.5,0.4),scales=(2*x_max_domain,0.5*dy,2*z_max_domain))
+    box_actorYZ = actor.box(center, np.array([[0,1,1]]), colors=(0.5, 0.5, 0.5,0.4),scales=(0.5*dx,2*z_max_domain,2*y_max_domain))
+    showm.scene.add(box_actorXY)
+    showm.scene.add(box_actorXZ)
+    showm.scene.add(box_actorYZ)
+    # Section in plane XY
+    line_slider_xy = ui.LineSlider2D(center=(150, 50), initial_value=0, min_value=z_min_domain, max_value=z_max_domain, orientation="horizontal")
+    showm.scene.add(line_slider_xy)
+    def translate_planeXY(slider):
+        shift = np.array([0,0,slider.value])
+        center = np.zeros(3)
+        box_actorXY.SetPosition(center+shift)
+    line_slider_xy.on_change = translate_planeXY
+    line_slider_xy_label = ui.TextBlock2D(position=(260,40),text="plane XY")
+    showm.scene.add(line_slider_xy_label)
+    # Section in plane XZ
+    line_slider_xz = ui.LineSlider2D(center=(150, 100), initial_value=0, min_value=y_min_domain, max_value=y_max_domain, orientation="horizontal")
+    showm.scene.add(line_slider_xz)
+    def translate_planeXZ(slider):
+        shift = np.array([0,slider.value,0])
+        center = np.zeros(3)
+        box_actorXZ.SetPosition(center+shift)
+    line_slider_xz.on_change = translate_planeXZ
+    line_slider_xz_label = ui.TextBlock2D(position=(260,90),text="plane XZ")
+    showm.scene.add(line_slider_xz_label)
+    # Section in plane YZ
+    line_slider_yz = ui.LineSlider2D(center=(150, 150), initial_value=0, min_value=x_min_domain, max_value=x_max_domain, orientation="horizontal")
+    line_slider_yz.default_color = (1,0,0) # Red
+    showm.scene.add(line_slider_yz)
+    def translate_planeYZ(slider):
+        shift = np.array([slider.value,0,0])
+        center = np.zeros(3)
+        box_actorYZ.SetPosition(center+shift)
+    line_slider_yz.on_change = translate_planeYZ
+    line_slider_yz_label = ui.TextBlock2D(position=(260,140),text="plane YZ")
+    showm.scene.add(line_slider_yz_label)
+    ###############################################################################################
     # Add referencial vectors axis
     center = np.array([[x_max_domain,y_min_domain,z_max_domain],[x_max_domain,y_min_domain,z_max_domain],[x_max_domain,y_min_domain,z_max_domain]])
     direction_x = np.array([[-1,0,0],[0,1,0],[0,0,-1]])
     arrow_actor = actor.arrow(center,direction_x,np.array([[1,0,0],[0,1,0],[0,0,1]]),heights=0.5*min(x_max_domain,y_max_domain,z_max_domain),tip_radius=0.1)
     showm.scene.add(arrow_actor)
+    ###############################################################################################
     # Creating Sphere Actor for all cells
     sphere_actor = actor.sphere(centers=C_xyz,colors=C_colors,radii=C_radii)
     showm.scene.add(sphere_actor)
+    ###############################################################################################
+    # Substrates
+    substrates = mcds.get_substrate_names()
+    substrate_combobox = ui.ComboBox2D(items=substrates, placeholder="Choose substrate", position=(450, 50), size=(200, 100))
+    def change_substrate(combobox):
+        selected_substrate = combobox.selected_text
+    substrate_combobox.on_change = change_substrate
+    showm.scene.add(substrate_combobox)
+    ###############################################################################################
+    # Menu list
+    MenuValues = ['Substrates','Cutting plane XY','Cutting plane XZ','Cutting plane YZ','Reset Camera']
+    Actors = [[substrate_combobox],[line_slider_xy,line_slider_xy_label],[line_slider_xz,line_slider_xz_label],[line_slider_yz,line_slider_yz_label]]
+    listbox = ui.ListBox2D(values=MenuValues, position=(700, 0), size=(300, 200), multiselection=False)
+    def hide_all_widgets():
+        for actor  in Actors:
+            for element in actor:
+                element.set_visibility(False)
+        box_actorXY.SetVisibility(False)
+        box_actorXZ.SetVisibility(False)
+        box_actorYZ.SetVisibility(False)
+    hide_all_widgets()
+    def MenuOption():
+        hide_all_widgets()
+        if MenuValues[MenuValues.index(listbox.selected[0])] == 'Substrates':
+            substrate_combobox.set_visibility(True)
+        if MenuValues[MenuValues.index(listbox.selected[0])] == 'Cutting plane XY':
+            box_actorXY.SetVisibility(True)
+            line_slider_xy.set_visibility(True)
+            line_slider_xy_label.set_visibility(True)
+        if MenuValues[MenuValues.index(listbox.selected[0])] == 'Cutting plane XZ':
+            box_actorXZ.SetVisibility(True)
+            line_slider_xz.set_visibility(True)
+            line_slider_xz_label.set_visibility(True)
+        if MenuValues[MenuValues.index(listbox.selected[0])] == 'Cutting plane YZ':
+            box_actorYZ.SetVisibility(True)
+            line_slider_yz.set_visibility(True)
+            line_slider_yz_label.set_visibility(True)
+        if MenuValues[MenuValues.index(listbox.selected[0])] == 'Reset Camera':
+            showm.scene.set_camera(position=(2.75*x_min_domain, 0, 7.0*z_max_domain), focal_point=(0, 0, 0), view_up=(0, 0, 0))
+    listbox.on_change = MenuOption
+    showm.scene.add(listbox)
+    ###############################################################################################
     # Show Manager
     showm.scene.reset_camera()
     showm.scene.set_camera(position=(2.75*x_min_domain, 0, 7.0*z_max_domain), focal_point=(0, 0, 0), view_up=(0, 0, 0))
+    ###############################################################################################
     # Save image
     if ( SaveImage ):
         window.record(showm.scene,size=size_window,out_path=folder+os.path.splitext(InputFile)[0]+".jpg")
