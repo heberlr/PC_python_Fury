@@ -8,7 +8,8 @@ Created on Mon Jan 27 18:00:01 2020
 from pyMCDS import pyMCDS
 import numpy as np
 import pandas as pd
-from fury import window, actor, ui
+from fury import window, actor, ui, convert
+import pyvista as pv
 import glob, os
 import sys
 
@@ -54,9 +55,9 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     X = np.unique(centers[0, :])
     Y = np.unique(centers[1, :])
     Z = np.unique(centers[2, :])
-    dx = (X.max() - X.min()) / X.shape[0]
-    dy = (Y.max() - Y.min()) / Y.shape[0]
-    dz = (Z.max() - Z.min()) / Z.shape[0]
+    dx = (X.max() - X.min()) / (X.shape[0]-1)
+    dy = (Y.max() - Y.min()) / (Y.shape[0]-1)
+    dz = (Z.max() - Z.min()) / (Z.shape[0]-1)
     x_min_domain = round(mcds.data['mesh']['x_coordinates'][0,0,0]-0.5*dx)
     y_min_domain = round(mcds.data['mesh']['y_coordinates'][0,0,0]-0.5*dy)
     z_min_domain = round(mcds.data['mesh']['z_coordinates'][0,0,0]-0.5*dz)
@@ -145,9 +146,35 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     ###############################################################################################
     # Substrates
     substrates = mcds.get_substrate_names()
-    substrate_combobox = ui.ComboBox2D(items=substrates, placeholder="Choose substrate", position=(450, 50), size=(200, 100))
+    substrate_combobox = ui.ComboBox2D(items=substrates, placeholder="Choose substrate", position=(150, 50), size=(500, 100))
+    # Preparing pyvista mesh
+    substrate0 = np.transpose(mcds.get_concentrations(substrates[0]), (1,0,2)) # CHECK ORDER ON PYMCDS
+    # Create the spatial reference
+    grid = pv.UniformGrid()
+    # Set the grid dimensions: shape + 1 because we want to inject our values on
+    # the CELL data (mesh)
+    grid.dimensions = np.array(substrate0.shape) + 1
+    # Edit the spatial reference
+    grid.origin = (x_min_domain, y_min_domain, z_min_domain)  # The bottom left corner of the data set
+    grid.spacing = (dx, dy, dz)  # These are the cell sizes along each axis
+    # Add the data values to the cell data
+    grid.cell_data[str(substrates[0])] = substrate0.flatten(order="F")  # Flatten the array!
+    pv.global_theme.cmap = 'coolwarm_r' # cmap palette color
+    # Add others Substrates
+    for i in range(1,len(substrates)):
+        grid.cell_data.set_array( np.transpose(mcds.get_concentrations(substrates[i]), (1,0,2)).flatten(order="F"),substrates[i]) # CHECK ORDER ON PYMCDS
     def change_substrate(combobox):
         selected_substrate = combobox.selected_text
+        grid.cell_data.active_scalars_name = selected_substrate # select substrate on grid
+        # p = grid.plot(show_edges=True)
+        p = pv.Plotter()
+        p.add_text(selected_substrate)
+        boxwidgets = p.add_mesh_clip_box(grid)
+        # print(boxwidgets.box_clipped_meshes)
+        p.add_camera_orientation_widget()
+        #print(p.box_clipped_meshes)
+        p.show()
+        # print(grid)
     substrate_combobox.on_change = change_substrate
     showm.scene.add(substrate_combobox)
     ###############################################################################################
