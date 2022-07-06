@@ -227,7 +227,7 @@ def CreateSnapshots(folder, coloring_function = coloring_function_default, heade
     files = glob.glob(folder+'out*.xml')
     # Make snapshots
     for file in files:
-        CreateScene(folder,os.path.basename(file),coloring_function=coloring_function_default, header_function=header_function_default,SaveImage=True)
+        CreateScene(folder,os.path.basename(file),coloring_function=coloring_function, header_function=header_function,SaveImage=True)
 
 if __name__ == '__main__':
     if (len(sys.argv) != 3 and len(sys.argv) != 2):
