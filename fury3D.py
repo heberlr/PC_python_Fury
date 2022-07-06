@@ -38,7 +38,7 @@ def coloring_function_default(df_cells):
 
 def header_function_default(mcds):
     # Current time
-    curr_time = mcds.get_time() # min
+    curr_time = round(mcds.get_time(),2) # min
     time_days = curr_time//1440.0
     time_hours = (curr_time%1440.0)//60
     time_min = ((curr_time%1440.0)%60)

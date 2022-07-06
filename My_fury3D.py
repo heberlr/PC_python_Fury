@@ -22,7 +22,7 @@ def my_custom_coloring_function(df_cells):
 
 def my_custom_header_function(mcds):
     # Current time
-    curr_time = mcds.get_time() # min
+    curr_time = round(mcds.get_time(),2) # min
     time_days = curr_time//1440.0
     time_hours = (curr_time%1440.0)//60
     time_min = ((curr_time%1440.0)%60)
