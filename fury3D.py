@@ -217,6 +217,8 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     ###############################################################################################
     # Save image
     if ( SaveImage ):
+        hide_all_widgets()
+        listbox.set_visibility(False)
         window.record(showm.scene,size=size_window,out_path=folder+os.path.splitext(InputFile)[0]+".jpg")
     else:
         showm.start()
