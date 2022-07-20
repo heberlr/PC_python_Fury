@@ -7,6 +7,7 @@ Furkan Kurtoglu(fkurtog@iu.edu)
 """
 
 from pyMCDS import pyMCDS
+from pathlib import Path
 import numpy as np
 from fury import window, actor, ui
 from fury.data import read_viz_icons, fetch_viz_icons
@@ -79,7 +80,7 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     ###############################################################################################
     # Creaating Scene
     size_window = (1000,1000)
-    showm = window.ShowManager(size=size_window, reset_camera=True, order_transparent=True, title="PhysiCell Fury: "+folder+InputFile)
+    showm = window.ShowManager(size=size_window, reset_camera=True, order_transparent=True, title="PhysiCell Fury: "+InputFile)
     ###############################################################################################
     # TITLE
     title_text = header_function(mcds)
@@ -284,7 +285,13 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         if MenuValues[MenuValues.index(listbox.selected[0])] == 'Snapshot':
             hide_all_widgets()
             listbox.set_visibility(False)
-            window.snapshot(showm.scene,size=size_window,fname=folder+os.path.splitext(InputFile)[0]+"_Snapshot.jpg")
+            FileName = "Snapshot_"+os.path.splitext(InputFile)[0]+".jpg"
+            if ( type(folder) == str ):
+                pathSave = folder+FileName
+            else:
+                pathSave = folder / FileName
+            print("Genererated: ",pathSave)
+            window.snapshot(showm.scene,size=size_window,fname=pathSave)
             listbox.set_visibility(True)
     listbox.on_change = MenuOption
     showm.scene.add(listbox)
@@ -297,7 +304,12 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
     if ( SaveImage ):
         hide_all_widgets()
         listbox.set_visibility(False)
-        window.snapshot(showm.scene,size=size_window,fname=folder+os.path.splitext(InputFile)[0]+".jpg")
+        FileName = os.path.splitext(InputFile)[0]+".jpg"
+        if ( type(folder) == str ):
+            pathSave = folder+FileName
+        else:
+            pathSave = folder / FileName
+        window.snapshot(showm.scene,size=size_window,fname=pathSave)
     else:
         showm.start()
 
@@ -312,6 +324,6 @@ if __name__ == '__main__':
       print("Please provide\n 1 arg [folder]: to taking snapshots from the folder \n or provide 2 args [folder] [frame ID]: to interact with scene!")
       sys.exit(1)
     if (len(sys.argv) == 3):
-      CreateScene(sys.argv[1],"output%08d.xml"%int(sys.argv[2]))
+      CreateScene(Path(sys.argv[1]),"output%08d.xml"%int(sys.argv[2]))
     if (len(sys.argv) == 2):
-      CreateSnapshots(sys.argv[1])
+      CreateSnapshots(Path(sys.argv[1]))
