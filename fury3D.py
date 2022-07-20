@@ -12,7 +12,6 @@ import numpy as np
 from fury import window, actor, ui
 from fury.data import read_viz_icons, fetch_viz_icons
 import pyvista as pv
-import glob
 import sys,os
 
 def coloring_function_default(df_cells):
@@ -314,11 +313,8 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         showm.start()
 
 def CreateSnapshots(folder, coloring_function = coloring_function_default, header_function = header_function_default):
-    if ( type(folder) == str ):
-        pathRead = folder+'out*.xml'
-    else:
-        pathRead = folder / 'out*.xml'
-    files = glob.glob(pathRead)
+    files = list(folder.glob('out*.xml'))
+    print(files)
     # Make snapshots
     for file in files:
         CreateScene(folder,os.path.basename(file),coloring_function=coloring_function, header_function=header_function,SaveImage=True)
