@@ -314,7 +314,11 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         showm.start()
 
 def CreateSnapshots(folder, coloring_function = coloring_function_default, header_function = header_function_default):
-    files = glob.glob(folder+'out*.xml')
+    if ( type(folder) == str ):
+        pathRead = folder+'out*.xml'
+    else:
+        pathRead = folder / 'out*.xml'
+    files = glob.glob(pathRead)
     # Make snapshots
     for file in files:
         CreateScene(folder,os.path.basename(file),coloring_function=coloring_function, header_function=header_function,SaveImage=True)
