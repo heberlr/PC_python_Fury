@@ -1,18 +1,18 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Jan 27 18:00:01 2020
+Provide simple plotting functionality for PhysiCell output results in 3D.
 
-@author: fkurtog
+Authors:
+Heber L Rocha (hlimadar@iu.edu)
+Furkan Kurtoglu(fkurtog@iu.edu)
 """
 
 from pyMCDS import pyMCDS
 import numpy as np
-import pandas as pd
-from fury import window, actor, ui, convert, utils
+from fury import window, actor, ui
 from fury.data import read_viz_icons, fetch_viz_icons
 import pyvista as pv
-import glob, os
-import sys
+import glob
+import sys,os
 
 def coloring_function_default(df_cells):
     Cell_types = df_cells['cell_type'].unique()
@@ -181,6 +181,8 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         hide_all_widgets()
         i_ren.force_render()
     button_slice_label = ui.TextBlock2D(text="Cut",font_size=20, font_family='Arial', justification='center', vertical_justification='middle', bold=True, italic=False, shadow=False, color=(1, 1, 1), bg_color=None, position=(450, 100))
+    # First we need to fetch some icons that are included in FURY.
+    fetch_viz_icons()
     button_slice = ui.Button2D(icon_fnames=[('square',read_viz_icons(fname="stop2.png"))],size=(100,50) ,position=(400,75))
     button_slice.on_left_mouse_button_clicked = SliceCells
     showm.scene.add(button_slice)
