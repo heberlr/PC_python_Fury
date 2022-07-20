@@ -119,7 +119,7 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         box_actorXY_min.SetPosition(plane_min)
         box_actorXY_max.SetPosition(plane_max)
     line_slider_xy.on_change = translate_planeXY
-    line_slider_xy_label = ui.TextBlock2D(position=(260,40),text="plane XY")
+    line_slider_xy_label = ui.TextBlock2D(position=(260,40),text="plane XY (microns)")
     showm.scene.add(line_slider_xy_label)
     # Section in plane XZ
     line_slider_xz = ui.LineDoubleSlider2D(center=(150, 100), initial_values=(y_min_domain,y_max_domain), min_value=y_min_domain, max_value=y_max_domain, orientation="horizontal")
@@ -130,7 +130,7 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         box_actorXZ_min.SetPosition(plane_min)
         box_actorXZ_max.SetPosition(plane_max)
     line_slider_xz.on_change = translate_planeXZ
-    line_slider_xz_label = ui.TextBlock2D(position=(260,90),text="plane XZ")
+    line_slider_xz_label = ui.TextBlock2D(position=(260,90),text="plane XZ (microns)")
     showm.scene.add(line_slider_xz_label)
     # Section in plane YZ
     line_slider_yz = ui.LineDoubleSlider2D(center=(150, 150), initial_values=(x_min_domain,x_max_domain), min_value=x_min_domain, max_value=x_max_domain, orientation="horizontal")
@@ -142,7 +142,7 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
         box_actorYZ_min.SetPosition(plane_min)
         box_actorYZ_max.SetPosition(plane_max)
     line_slider_yz.on_change = translate_planeYZ
-    line_slider_yz_label = ui.TextBlock2D(position=(260,140),text="plane YZ")
+    line_slider_yz_label = ui.TextBlock2D(position=(260,140),text="plane YZ (microns)")
     showm.scene.add(line_slider_yz_label)
     ###############################################################################################
     # Button to slice
@@ -180,10 +180,10 @@ def CreateScene(folder, InputFile, coloring_function = coloring_function_default
             print("------------------------------------------------------------------")
         hide_all_widgets()
         i_ren.force_render()
-    button_slice_label = ui.TextBlock2D(text="Cut",font_size=20, font_family='Arial', justification='center', vertical_justification='middle', bold=True, italic=False, shadow=False, color=(1, 1, 1), bg_color=None, position=(450, 100))
+    button_slice_label = ui.TextBlock2D(text="Cut",font_size=20, font_family='Arial', justification='center', vertical_justification='middle', bold=True, italic=False, shadow=False, color=(1, 1, 1), bg_color=None, position=(550, 100))
     # First we need to fetch some icons that are included in FURY.
     fetch_viz_icons()
-    button_slice = ui.Button2D(icon_fnames=[('square',read_viz_icons(fname="stop2.png"))],size=(100,50) ,position=(400,75))
+    button_slice = ui.Button2D(icon_fnames=[('square',read_viz_icons(fname="stop2.png"))],size=(100,50) ,position=(500,75))
     button_slice.on_left_mouse_button_clicked = SliceCells
     showm.scene.add(button_slice)
     showm.scene.add(button_slice_label)
